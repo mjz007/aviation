@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+    <mapper namespace="com.mapper.Mapper">
+    		<select id = "allCnty" resultType="String">
+    			select cnty from cities group by cnty
+    		</select>
+    		<select id="mid" parameterType="Map"  resultType="com.pojo.cities">
+    			select * from cities where city = #{city} and cnty = #{cnty}
+    		</select>
+    		
+			<select id="cities" resultType="com.pojo.cities">
+				select * from cities where mid in (select Omid from onefight) or mid in (select Dmid from onefight)
+			</select>
+			
+			<select id = "fightNum" resultType="String">
+				select fightNum from onefight
+			</select>
+			
+			<select id = "lines" resultType="com.pojo.Onefight">
+				select * from onefight
+			</select>
+			
+			<select id = "daohan" resultType="String">
+				select city from cities group by city
+			</select>
+			
+			<select id="begincity" parameterType="String"  resultType="com.pojo.cities" >
+				select * from cities where city = #{begincity}
+			</select>
+			
+			<select id="endcity"  parameterType="String"  resultType="com.pojo.cities" >
+				select * from cities where city = #{endcity}
+			</select>
+			
+			<select id = "linestyle"  parameterType="Map" resultType="com.pojo.fight">
+				select * from fight 
+				where Originating = #{chufa} and Destination = #{daoda}
+				group by fightNum
+			</select>
+			
+			<select id = "fight" parameterType="String"  resultType="com.pojo.fight">
+				select * from fight where fightNum = #{fightNum}
+			</select>
+			
+			<select id = "city" parameterType="int"  resultType="com.pojo.cities">
+				select * from cities where mid = #{mid}
+			</select>
+			
+			<select id = "Statistical" parameterType="int"  resultType="com.pojo.fight">
+				select * from (select * from fight
+				where Originating = #{mid} or Destination = #{mid}
+				group by fightNum)fight
+				group by Originating
+				UNION
+				select * from (select * from fight
+				where Originating = #{mid} or Destination = #{mid}
+				group by fightNum)fight
+				group by Destination
+			</select>
+			
+			
+			<select id = "diqu"   parameterType="String" resultType="com.pojo.fight">
+				select * from (select * from fight
+				where Originating in (select mid from cities where region=#{region}) or Destination in (select mid from cities where region=#{region})
+				group by fightNum)fight
+				group by Originating
+				UNION
+				select * from (select * from fight
+				where Originating in (select mid from cities where region=#{region}) or Destination in (select mid from cities where region=#{region})
+				group by fightNum)fight
+				group by Destination
+			</select>
+			
+			<select id = "prov"   parameterType="String" resultType="com.pojo.fight">
+				select * from (select * from fight
+				where Originating in (select mid from cities where prov=#{prov}) or Destination in (select mid from cities where prov=#{prov})
+				group by fightNum)fight
+				group by Originating
+				UNION
+				select * from (select * from fight
+				where Originating in (select mid from cities where prov=#{prov}) or Destination in (select mid from cities where prov=#{prov})
+				group by fightNum)fight
+				group by Destination
+			</select>
+			
+			<select id = "cnty"   parameterType="String" resultType="com.pojo.fight">
+				select * from (select * from fight
+				where Originating in (select mid from cities where cnty=#{cnty}) or Destination in (select mid from cities where cnty=#{cnty})
+				group by fightNum)fight
+				group by Originating
+				UNION
+				select * from (select * from fight
+				where Originating in (select mid from cities where cnty=#{cnty}) or Destination in (select mid from cities where cnty=#{cnty})
+				group by fightNum)fight
+				group by Destination
+			</select>
+			
+			<select id="fanman"   resultType="com.pojo.Onefight">
+				select * from onefight
+				group by Omid,Dmid
+				having count(omid) > 15 or count(dmid) > 15
+			</select>
+			
+			<select id = "airports" resultType="String">
+				select * from airports
+			</select>
+			
+			<select id = "iata"  parameterType="Map" resultType="com.pojo.fight">
+				select * from fight 
+				where BegAir = #{chufa} and EndAir = #{daoda}
+				group by fightNum
+			</select>
+			
+			
+			<select id = "Country" parameterType="Map" resultType="com.pojo.fight">
+				select * from fight where 
+				Originating in (select mid from cities where cnty=#{chufa})
+				and
+				Destination in (select mid from cities where cnty=#{daoda})
+				group by fightNum
+			</select>
+				
+			<select id = "Provs" parameterType="Map" resultType="com.pojo.fight">
+				select * from fight where 
+				Originating in (select mid from cities where prov=#{chufa})
+				and
+				Destination in (select mid from cities where prov=#{daoda})
+				group by fightNum
+			</select>
+			
+			<select id = "Regions" parameterType="Map" resultType="com.pojo.fight">
+				select * from fight where 
+				Originating in (select mid from cities where region=#{chufa})
+				and
+				Destination in (select mid from cities where region=#{daoda})
+				group by fightNum
+			</select>
+			
+			<select id = "cntyline"  parameterType="java.util.List" resultType="com.pojo.Onefight">
+				select * from onefight where fightNum in
+				<foreach item="fightNum" index="index" collection="list" open="(" separator="," close=")">  
+                       #{fightNum}  
+            	</foreach> 
+			</select>
+			
+			<select id = "CntyCity" parameterType="String" resultType="com.pojo.cities">
+				select city from cities where cnty = #{cnty}
+			</select>
+			
+			<select id="ProvCity" parameterType="String" resultType="com.pojo.cities">
+				select * from cities where prov = #{prov} and region = #{region}
+			</select>
+			
+			<select id="RegionProv" parameterType="String" resultType="com.pojo.cities">
+				select * from cities where region = #{region}
+				group by prov
+			</select>
+			
+			<select id="countAviationNum"  resultType="int">
+				select count(*)  from (select aviationNum from onefight
+				where aviationNum != '无'
+				group by aviationNum) onefight
+			</select>
+			
+			<select id = "counCnty" resultType="int">
+				select count(*) from onefight
+				where omid in (select mid from cities where cnty='中国') or dmid in (select mid from cities where cnty='中国')
+				
+			</select>
+    </mapper>
